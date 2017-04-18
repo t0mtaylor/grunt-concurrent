@@ -37,7 +37,7 @@ module.exports = function (grunt) {
         if (opts.pathOverride) {
             var storeBase = process.cwd();
 
-            //grunt.file.setBase(opts.pathOverride);
+            grunt.file.setBase(opts.pathOverride);
         }
 
 		async.eachLimit(tasks, opts.limit, function (task, next) {
@@ -71,7 +71,7 @@ module.exports = function (grunt) {
 
         // restore path to previous state
         if (opts.pathOverride && storeBase) {
-            //grunt.file.setBase(storeBase);
+            grunt.file.setBase(storeBase);
         }
 
 	});
