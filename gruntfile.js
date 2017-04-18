@@ -1,7 +1,29 @@
 'use strict';
 var supportsColor = require('supports-color');
 
+
 module.exports = function (grunt) {
+    
+        
+    var pathtest = grunt.option('pathtest') || false;
+    
+    
+    grunt.loadTasks('tasks');
+	grunt.loadNpmTasks('grunt-contrib-clean');
+	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-simple-mocha');
+	grunt.loadNpmTasks('grunt-nodemon');
+    
+        
+    //if (pathtest) {
+        
+        grunt.file.write('test/tmp/pathtest1');
+    
+        grunt.file.setBase('test/tmp');
+        
+    //}
+    
+    
 	grunt.initConfig({
 		concurrent: {
 			test: ['test1', 'test2', 'test3'],
@@ -12,6 +34,12 @@ module.exports = function (grunt) {
 					logConcurrentOutput: true
 				},
 				tasks: ['nodemon', 'watch']
+			},
+            path: {
+				options: {
+					//pathOverride: '../'
+				},
+				tasks: ['testargs1', 'nodemon', 'test3', 'watch']
 			},
 			colors: ['colorcheck']
 		},
@@ -41,11 +69,8 @@ module.exports = function (grunt) {
 		}
 	});
 
-	grunt.loadTasks('tasks');
-	grunt.loadNpmTasks('grunt-contrib-clean');
-	grunt.loadNpmTasks('grunt-contrib-watch');
-	grunt.loadNpmTasks('grunt-simple-mocha');
-	grunt.loadNpmTasks('grunt-nodemon');
+
+    
 
 	grunt.registerTask('test1', function () {
 		console.log('test1');
@@ -97,19 +122,49 @@ module.exports = function (grunt) {
 		var supports = String(Boolean(supportsColor));
 		grunt.file.write('test/tmp/colors', supports);
 	});
+    
+    grunt.registerTask('pathtest1', function () {
+		console.log('pathtest1-1', process.cwd());
+		grunt.file.write('test/tmp/pathtest1');
+        grunt.file.setBase('test/tmp');
+        console.log('pathtest1-2', process.cwd());
+	});
 
-	grunt.registerTask('default', [
-		'clean',
-		'concurrent:test',
-		'concurrent:testSequence',
-		'simplemocha',
-		'clean'
+    grunt.registerTask('pathtestrun', [
+		'pathtest1',
+        'concurrent:path'
 	]);
+    
+    
+    grunt.registerTask('default', 'Run tests for concurrent depending on mode', function(target, type, build) {
+        
+        if (pathtest) {
+        
+			return grunt.task.run([
+                'clean',
+                'pathtestrun',
+                'clean'              
+            ]);
+        
+		} else {
+
+            grunt.task.run([
+                'clean',
+                'concurrent:test',
+                'concurrent:testSequence',
+                'simplemocha',
+                'clean'
+            ]);
+		}
+    });
+
 };
 
 function sleep(milliseconds) {
-	var start = new Date().getTime();
-	for (var i = 0; i < 1e7; i++) {
+	var start = new Date().getTime(),
+        i = 0;
+
+	for (; i < 1e7; i++) {
 		if ((new Date().getTime() - start) > milliseconds) {
 			break;
 		}

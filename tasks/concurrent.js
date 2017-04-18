@@ -1,20 +1,20 @@
 'use strict';
-var os = require('os');
-var padStream = require('pad-stream');
-var async = require('async');
-var arrify = require('arrify');
-var indentString = require('indent-string');
+var os = require('os'),
+    padStream = require('pad-stream'),
+    async = require('async'),
+    arrify = require('arrify'),
+    indentString = require('indent-string'),
 
-var cpCache = [];
+    cpCache = [];
 
 module.exports = function (grunt) {
 	grunt.registerMultiTask('concurrent', 'Run grunt tasks concurrently', function () {
-		var cb = this.async();
-		var opts = this.options({
-			limit: Math.max((os.cpus().length || 1) * 2, 2)
-		});
-		var tasks = this.data.tasks || this.data;
-		var flags = grunt.option.flags();
+		var cb = this.async(),
+            opts = this.options({
+                limit: Math.max((os.cpus().length || 1) * 2, 2)
+            }),
+            tasks = this.data.tasks || this.data,
+            flags = grunt.option.flags();
 
 		if (flags.indexOf('--no-color') === -1 &&
 			flags.indexOf('--no-colors') === -1 &&
@@ -32,6 +32,13 @@ module.exports = function (grunt) {
 				'concurrent task options'
 			);
 		}
+
+        // resolve path issue with an override
+        if (opts.pathOverride) {
+            var storeBase = process.cwd();
+
+            //grunt.file.setBase(opts.pathOverride);
+        }
 
 		async.eachLimit(tasks, opts.limit, function (task, next) {
 			var cp = grunt.util.spawn({
@@ -61,6 +68,12 @@ module.exports = function (grunt) {
 
 			cb();
 		});
+
+        // restore path to previous state
+        if (opts.pathOverride && storeBase) {
+            //grunt.file.setBase(storeBase);
+        }
+
 	});
 };
 
